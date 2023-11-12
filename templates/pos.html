@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  body {
+    background-image: linear-gradient(white, blue);
+  }
+</style>
+<br>
+{% with message = get_flashed_messages() %}
+  {% if message %}
+    {% for msg in message %}
+    <section class="notification is-warning"> {{ msg }} </section>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+<div class="container" style="background-color: aliceblue;">
+    <form method="POST" id="barcode-form">
+      <br>
+      <div class="columns">
+        <div class="column">
+          <label for="barcode" style="margin-left: 20px;">Enter Product: </label>
+          <input type="search" class="input" placeholder="Product Name" name="barcode" id="barcode" autofocus style="margin-left: 20px;">
+        </div>
+        <div class="column"></div>
+        <div class="column"></div>
+      </div>
+    <div class="columns">
+        <div class="column is-8">
+            <div class="container">
+              <div class="container" style="height: 400px; background-color: gray">
+                <table class="table is-narrow is-fullwidth" style="max-height: 400px; border: 1px solid black; overflow-y: scroll;">
+                    <thead>
+                        <tr>
+                            <th>code</th>
+                            <th>product</th>
+                            <th>unit price</th>
+                            <th>qty.</th>
+                        </tr>
+                    </thead>
+                    {% if arr %}
+                      {% for i in arr %}
+                        {% if i[4] <=10 and i[4] >5 %}
+                        <tr style="background-color: orange;" id="rows">
+                          <td>{{ i[0] }} </td>
+                          <td>{{ i[1] }}</td>
+                          <td id="td-price"> {{ i[3] }} </td>
+                          <td>{{ i[2] }} </td>
+                          </tr>
+                        {% elif i[4] <= 5 %}
+                        <tr style="background-color: red;" id="rows">
+                          <td>{{ i[0] }} </td>
+                          <td>{{ i[1] }}</td>
+                          <td id="td-price"> {{ i[3] }} </td>
+                          <td>{{ i[2] }} </td>
+                          </tr>
+                        {% else %}
+                        <tr>
+                          <td>{{ i[0] }} </td>
+                          <td>{{ i[1] }}</td>
+                          <td id="td-price"> {{ i[3] }} </td>
+                          <td>{{ i[2] }} </td>
+                          </tr>
+                      {% endif %}
+                           
+                      {% endfor %}
+                    {% endif %}
+                    <tbody>
+                    <!-- list of all items to be displayed -->
+                    </tbody>
+                </table>
+              </div>
+            </div>
+        </div>
+        <div class="column">
+               
+                <label for="qty">Quantity:</label>  
+                <input type="number" name="qty" id="qty" class="input is-link" min="1" value="1" style="margin-right:20px;">
+                <input type="submit" value="Submit" style="visibility: hidden;">
+                <br><br>
+                <h1>Total:</h1><p class="p is-size-1 is-pulled-right" id="total" style="margin-right: 5px;">
+                {{ total }}
+                </p>
+                <br><br><br><br> <br>
+                <div class="columns">
+                  <div class="column"></div>
+                </form>
+                  <div class="column"><button id="cancel" class="button is-danger is-large">CANCEL</button></div>
+                    <div class="column"><button id="checkout" style="margin-right: 10px;" class="button is-primary is-large">CHECKOUT</button></div>
+                </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Amount Tendered</p>
+      <button class="delete" aria-label="close" id="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <form action="{{ url_for('checkout') }}" method="POST" id="payment">
+        <label>Total Amount: </label> <p class="p is-size-3"> {{ total }} </p>
+        <input type="number" required class="input is-link is-large" min="1" autofocus id="amount" name="amount">
+        <input type="hidden" name="subtotal" value=" {{ total }} ">
+        <input type="submit" value="Submit" style="visibility: hidden;">
+      </form>  <!-- <button id="checkout" class="button is-primary is-large">CHECKOUT</button> -->
+    </section>
+  </div>
+</div>
+
+<script>
+    let total_amount = 0;
+
+  $(document).ready(function(){
+    $('#close').click(function(){
+      $('.modal').hide();
+    });
+  })
+
+  $(document).ready(function(){
+    $(function(){
+    $('#checkout').click(function(e){
+      e.preventDefault();
+      $('.modal').show()
+    })
+  })
+  })
+
+  $(document).ready(function(){
+    $('#payment').on('submit', function(){
+      if(parseFloat($('#amount').val()) < parseFloat( {{ total }} )) {
+        alert('Insufficient Amount!')
+        return false;
+      }
+    })
+  });
+
+  $(document).ready(function(){
+    let quantities = []
+
+    let quantity = $('#qty').val()
+    console.log(quantity);
+    //wip
+    quantities.push(quantities)
+
+    localStorage.setItem("qty",quantities)
+    console.log(localStorage.getItem('qty'));
+  })
+
+
+  $(document).ready(function(){
+    $('#barcode-form').submit(function(e){
+      let qty = localStorage.getItem("qty")
+      log('qty=')
+      // console.log('persisting data: ' + qty);
+      $('#td-qty').html(qty)     
+    })
+  })
+
+
+  // style the table row depending on the stock value
+
+
+
+
+  // fetch all products in database 
+
+  $(function(){
+  let all_data = [
+    {% for i in all_items %}
+      "{{ i }}",
+    {% endfor %}
+  ]
+
+  $('#barcode').autocomplete({
+    source: all_data
+  })
+
+  });
+  
+ 
+
+
+
+
+  // $(function(){
+  //   $('table tbody tr #td-price').each(function(idx, val){
+  //     let total = parseFloat( {{ qty }} * $(this).text());
+  //     total_amount += total;
+  //     console.log('total amount ' + {{ qty }});
+  //     $('#total').text(total_amount)     
+  //   })
+  // })
+
+
+  $(document).ready(function(){
+    $('#cancel').click(function(e){
+      $.ajax({
+        type: 'POST',
+        url: 'http://localhost:5000/cancel',
+        success: function(result){
+          console.log('cleared!');
+
+        },
+        error: function(res){
+          console.log('error!');
+        }
+      })
+    });
+  });
+
+  // $(document).ready(function(){
+  //   $('#barcode-form').submit(function(){
+  //     $('#td-qty').text = qty
+  //   })
+  // })
+
+  
+
+  function clickme1000(){
+    let data = document.getElementById('val1000').innerText
+    let total = num += parseFloat(data);
+    document.getElementById('total-amount').innerText = total
+  }
+
+  function clickme500(){
+    let data = document.getElementById('val500').innerText
+    let total = num += parseFloat(data);
+    document.getElementById('total-amount').innerText = total
+  }
+
+  function clickme100(){
+    let data = document.getElementById('val100').innerText
+    let total = num += parseFloat(data);
+    document.getElementById('total-amount').innerText = total
+  }
+
+  function clickme50(){
+    let data = document.getElementById('val50').innerText
+    let total = num += parseFloat(data);
+    document.getElementById('total-amount').innerText = total
+  }
+
+  function clickme20(){
+    let data = document.getElementById('val20').innerText
+    let total = num += parseFloat(data);
+    document.getElementById('total-amount').innerText = total
+  }
+
+  function clickme10(){
+    let data = document.getElementById('val10').innerText
+    let total = num += parseFloat(data);
+    document.getElementById('total-amount').innerText = total
+  }
+
+  function clickme5(){
+    let data = document.getElementById('val5').innerText
+    let total = num += parseFloat(data);
+    document.getElementById('total-amount').innerText = total
+  }
+
+  function clickme1(){
+    let data = document.getElementById('val1').innerText
+    let total = num += parseFloat(data);
+    document.getElementById('total-amount').innerText = total
+  }
+
+</script>
+{% endblock %}

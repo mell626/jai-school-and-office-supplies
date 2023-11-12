@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+    <div class="container">
+        {% with message = get_flashed_messages() %}
+            {% if message %}
+                {% for msg in message %}
+                    <div class="notification is-warning">
+                        {{ msg }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="columns">
+            <div class="column"></div>
+            <div class="column">
+                <p class="p is-size-3">
+                    {% if settings %}
+                        {% for i in settings %}
+                            {{ i.name_of_shop }}
+                        {% endfor %}
+                    {% endif %}
+                </p>
+                <br><br><br><br><br><br>
+                <form method="POST">
+                <fieldset>
+                    <legend><p class="p is-size-4">Admin Login</p></legend>
+                    <br>
+                    <input type="text" class="input" name="username" id="username" autofocus required>
+                    <br>
+                    <br>
+                    <input type="password" class="input" name="password" id="password">
+                    <br><br>
+                    <input class="button is-info is-pulled-right" type="submit" value="Login" id="login-attempt">
+                </fieldset>
+                </form>
+            </div>
+            <div class="column"></div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function(){
+            let counter = 0;
+            $('#login-attempt').click(function(e){
+                localStorage.setItem('counter', counter +=1);
+            });
+        });
+
+
+        $(document).ready(function(){
+            console.log( {{ attempts }} );
+            if( {{ attempts }} === 3) {
+                $('#username').prop('disabled', true);
+                $('#password').prop('disabled', true);
+            }
+        });
+    </script>
+{% endblock %}

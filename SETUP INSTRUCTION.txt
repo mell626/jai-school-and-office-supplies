@@ -1,0 +1,22 @@
+October 09, 2023 version
+
+
+INSTRUCTIONS
+
+================ INSTALLATION =============================
+
+1. Download the zip file from the google drive.
+
+2. After downloaded, extract the file using 7zip or winRAR
+
+3. Open the extracted folder and type in cmd in the searchbar at the top of the file manager (Windows)
+
+4. in the cmd, type-in env\Scripts\activate to activate virtual environment. The cmd line must display (env) at the left part.
+
+5. Upon activating the virtual environment, type in pip install flask flask-sqlalchemy flask-admin 
+Press enter. Device must have internet connection to download needed files.
+
+================= RUN PROGRAM =============================
+1. After completing installation, in the same command prompt, type-in python app.py to run the server.
+
+2. Open any web browser and search for localhost:5000 to run the system.

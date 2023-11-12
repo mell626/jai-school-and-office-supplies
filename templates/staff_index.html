@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+        <section class="hero is-fullheight" style=" max-width: 100%; max-height: 100vh; margin: auto;">
+            {% with message = get_flashed_messages() %}
+            {% if message %}
+                {% for msg in message %}
+                    <div class="notification is-warning">
+                        {{ msg }}
+                    </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            
+            <div class="hero-body">
+                <div class="container has-text-centered">
+                    <div class="column is-4 is-offset-4">
+                        <h2 class="title has-text-black">
+                        {% for i in settings %}
+                        {{ i.name_of_shop }}
+                        {% endfor %}    
+                        </h2>
+                        <hr class="login-hr">
+                        <p class="title has-text-black">Cashier Login</p>
+                        <div class="box">
+                            <!-- <figure class="avatar">
+                                <img src="https://via.placeholder.com/150">
+                            </figure> -->
+                            <form method="POST">
+                                <div class="field">
+                                    <div class="control">
+                                        <input class="input is-large" id="user-id" name="username" type="text" placeholder="username" autofocus="">
+                                    </div>
+                                </div>
+    
+                                <div class="field">
+                                    <div class="control">
+                                        <input class="input is-large" name="password" id="password" type="password" placeholder="Your Password">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label class="checkbox">       
+                    </label>
+                                </div>
+                                <button class="button is-block is-info is-large is-fullwidth">Login <i class="fa fa-sign-in" aria-hidden="true"></i></button>
+                            </form>
+                            <br>
+                            <a href=" {{ url_for('forgot_password') }} " class="p is-size-6">Forgot Password</a>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </section>
+        <script async type="text/javascript" src="../js/bulma.js"></script>
+{% endblock %}
