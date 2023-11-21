@@ -230,7 +230,8 @@ class Invoice(db.Model):
 
 class InventoryView(AdminIndexView):
     def is_visible(self):
-        return False
+        if 'admin' or 'staff' in session:
+            return False
     
     @expose('/')
     def index(self):
@@ -239,7 +240,7 @@ class InventoryView(AdminIndexView):
         new_sales = str(daily_sales).strip('[](),')
         print('daily_sales=',str(daily_sales).strip('[](),'))
         daily_invoices = db.session.query(Invoice).count()
-        return self.render('admin/index.html', daily_sales = new_sales, daily_invoices = daily_invoices)
+        return self.render('admin/index.html', daily_sales = new_sales, daily_invoices = daily_invoices ,user = user)
 
 
 
@@ -256,7 +257,7 @@ class ProductView(ModelView):
     column_list = ['category_id','product_code','name', 'details', 'unit_price',]
 
     def is_accessible(self):
-        if 'admin' in session:
+        if 'admin' or 'staff' in session:
             return True
         return False
 
@@ -275,7 +276,7 @@ class CategoryView(ModelView):
     
 
     def is_accessible(self):
-        if 'admin' in session:
+        if 'admin' or 'staff' in session:
             return True
         return False
 
@@ -315,7 +316,7 @@ class StocksView(ModelView):
     column_hide_backrefs = False
     column_list = ['product', 'quantity', 'timestamp',]
     def is_accessible(self):
-        if 'admin' in session:
+        if 'admin' or 'staff' in session:
             return True
         return False
    
@@ -478,6 +479,8 @@ def reset_password():
 
 @app.route('/admin/login', methods = ['GET', 'POST'])
 def admin_index():
+    staff_username = 'staff'
+    staff_password = 'staff@123'
     if 'admin' in session:
         return redirect(url_for('pos'))
     global attempts
@@ -493,6 +496,9 @@ def admin_index():
                 session['admin'] = username
                 print('admin is=',user)
                 return redirect(url_for('pos', user=user))
+            elif username == staff_username and password == staff_password:
+                session['staff'] = username
+                return redirect(url_for('admin.index'))
             
             if attempts == 3:
                 flag = True
@@ -505,6 +511,7 @@ def admin_index():
                 # if secs == 0:
                 #     flag = False
                 #     attempts = 0
+
 
             flash('incorrect username or password!')
             return redirect(url_for('index'))

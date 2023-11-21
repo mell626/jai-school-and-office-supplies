@@ -26,7 +26,10 @@
 <body>
    <br>
     <div class="container-label">
-      <a href=" {{ url_for('pos') }} ">POS</a> &nbsp;  &nbsp;  &nbsp;  &nbsp; <a href=" {{ url_for('logout') }} ">Logout</a>  
+      {% if user %}
+      <a href=" {{ url_for('pos') }} ">POS</a> &nbsp;  &nbsp;  &nbsp;  &nbsp;
+      {% endif %}
+       <a href=" {{ url_for('logout') }} ">Logout</a>  
     </div>
     <br><br>
     <div class="grid-container">
