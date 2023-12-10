@@ -122,6 +122,7 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String(255))
     products = db.Column(db.Integer, db.ForeignKey('product.id'))
+    # category_id = db.relationship('Product', backref='category', lazy=True, uselist = False)
     timestamp = db.Column(db.DateTime, default= datetime.now())
 
     def __init__(self, name):
@@ -132,6 +133,16 @@ class Category(db.Model):
     
     def __str__(self):
         return self.name
+
+
+class Brand(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(255), unique = True)
+    product = db.Column(db.Integer, db.ForeignKey('product.id'))
+    timestamp = db.Column(db.DateTime, default= datetime.now())
+
+    def __repr__(self):
+        return f'{self.name}'
 
 
 
@@ -167,8 +178,10 @@ class Product(db.Model):
     name = db.Column(db.String(255))
     details = db.Column(db.Text)
     unit_price = db.Column(db.Float)
+    brand = db.relationship('Brand', backref='product-brand', lazy = True)
     # purchases = db.relationship('Purchase', backref='product', lazy = 'dynamic')
     stock_id = db.Column(db.Integer, db.ForeignKey('stock.id'))
+    # products = db.Column(db.Integer, db.ForeignKey('category.id'))
     category_id = db.relationship('Category', backref='product', lazy=True)
     timestamp = db.Column(db.DateTime, default= datetime.now())
     # def __init__(self,category_id, product_code, name, details, unit_price):
@@ -246,15 +259,15 @@ class InventoryView(AdminIndexView):
 
 class ProductView(ModelView):
     page_size=25
-    column_searchable_list = ['name', 'product_code',]
+    column_searchable_list = ['name',]
     create_modal = True
     edit_modal = True
     column_display_pk = True
     column_hide_backrefs = False
     can_export = True
     can_edit = True
-    form_excluded_columns = ['timestamp',]
-    column_list = ['category_id','product_code','name', 'details', 'unit_price',]
+    form_excluded_columns = ['timestamp', 'stock',]
+    column_list = ['category_id','brand','product_code','name', 'details', 'unit_price',]
 
     def is_accessible(self):
         if 'admin' or 'staff' in session:
@@ -263,6 +276,15 @@ class ProductView(ModelView):
 
     def inaccessible_callback(self, name, **kwargs):
         return redirect(url_for('index'))
+
+
+class BrandView(ModelView):
+    page_size = 25
+    column_searchable_list = ['name',]
+    form_excluded_columns = ['timestamp']
+    column_display_pk = True
+    column_hide_backrefs = False
+
 
 class CategoryView(ModelView):
     page_size = 25
@@ -314,7 +336,12 @@ class SettingsView(ModelView):
 class StocksView(ModelView):
     column_display_pk = True
     column_hide_backrefs = False
-    column_list = ['product', 'quantity', 'timestamp',]
+    column_list = ['id','product', 'quantity', 'timestamp',]
+    column_searchable_list = ['id', 'quantity',]
+    column_display_pk = True
+    column_hide_backrefs = False
+
+
     def is_accessible(self):
         if 'admin' or 'staff' in session:
             return True
@@ -396,9 +423,10 @@ class StaffView(ModelView):
 
 
 admin = Admin(app, name='', template_mode='bootstrap3', index_view = InventoryView())
-admin.add_view(SalesView(name='Sales', endpoint='sales'))
+# admin.add_view(SalesView(name='Sales', endpoint='sales'))
 admin.add_view(ProductView(Product, db.session))
 admin.add_view(CategoryView(Category, db.session))
+admin.add_view(BrandView(Brand, db.session))
 admin.add_view(StocksView(Stock,db.session))
 admin.add_view(InvoiceView(Invoice, db.session))
 admin.add_view(ReportsView(name='Reports', endpoint='reports'))
@@ -413,24 +441,27 @@ admin.add_view(SettingsView(Settings, db.session))
 ##############################################################################
 @app.route('/', methods =['GET', 'POST'])
 def index():
-    
+    print('index is called!!')
     settings = Settings.query.limit(1).all()
-    user = session.get('staff', None)
+    user = session.get('cashier', None)
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
         if username and password and request.method =='POST':
-            staff = Staff.query.filter_by(username=username).first()
+            
+            staff = Staff.query.filter_by(username=username).first() #unable to login
+            print(staff, ' is called!!')
             if staff:
                 if staff.password == password:
 
-                    session['staff'] = username
+                    session['cashier'] = username
                     print('cashier is=',user)
                     return redirect(url_for('pos', user = user))
                     flash('User ID or password is incorrect!')
                 flash('Incorrect username or password!')
                 return redirect(url_for('index'))
+            print('unablr to find account')
 
     return render_template('staff_index.html', settings = settings, user = user)
 

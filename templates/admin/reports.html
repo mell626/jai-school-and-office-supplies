@@ -2,8 +2,89 @@
 
 
 {% block body %}
+
+<style>
+  .grid-container {
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    background-color: #213555;
+    padding: 10px;
+  }
+  .grid-item {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    font-size: 30px;
+    text-align: center;
+  }
+
+  .container-label {
+    text-align: right;
+  }
+  </style>
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 <div class="container">
+
+  <br>
+    <div class="container-label">
+      {% if user %}
+      <a href=" {{ url_for('pos') }} ">POS</a> &nbsp;  &nbsp;  &nbsp;  &nbsp;
+      {% endif %}
+       <a href=" {{ url_for('logout') }} ">Logout</a>  
+    </div>
+    <br><br>
+    <div class="grid-container">
+      <div class="grid-item">
+        <article>
+          <div class="hero is-info is-fullwidth" style="height: 150px; text-align: center;">
+           <div class="hero-body">
+             <p class="title is-4"> 
+              {{ daily_sales }}
+             </p>
+           </div>
+          </div>
+           <h2 class="subtitle">Average Daily</h2>
+         </article>
+      </div>
+      <div class="grid-item">
+        <article>
+          <div class="hero is-info is-fullwidth" style="height: 150px; text-align: center;">
+            <div class="hero-body">
+              <p class="title is-4"> 0.00 </p>
+            </div>
+           </div>
+          <h2 class="subtitle">Expenses</h2>
+        </article>
+      </div>
+      <div class="grid-item">
+        <article>
+          <div class="hero is-info is-fullwidth" style="height: 150px; text-align: center;">
+            <div class="hero-body">
+              <p class="title is-4"> {{ daily_invoices }} </p>
+            </div>
+           </div>
+          <h2 class="subtitle">Sales</h2>
+        </article>
+      </div>
+      <div class="grid-item">
+        <article>
+          <div class="hero is-info is-fullwidth" style="height: 150px; text-align: center;">
+            <div class="hero-body">
+              <p class="title is-4"> {{ daily_invoices }} </p>
+            </div>
+            
+           </div>
+          <h2 class="subtitle">Daily Invoices</h2>
+         
+        </article>
+      </div>
+    </div>
+  
+      </section>
+
+
     <br><br>
     <div class="columns">
         <div class="column">
