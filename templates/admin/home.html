@@ -1,0 +1,18 @@
+{% extends 'admin/master.html' %}
+
+
+
+{% block body %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+<div class="container">
+
+    <br>
+      <div class="container-label">
+       
+        <a class="p is-size-3" href=" {{ url_for('pos') }} ">POS</a> &nbsp;  &nbsp;  &nbsp;  &nbsp;
+        
+         <a href=" {{ url_for('logout') }} ">Logout</a>  
+      </div>
+    </div>
+{% endblock %}

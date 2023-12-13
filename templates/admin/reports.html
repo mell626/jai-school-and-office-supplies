@@ -14,7 +14,7 @@
     background-color: rgba(255, 255, 255, 0.8);
     border: 1px solid rgba(0, 0, 0, 0.8);
     padding: 20px;
-    font-size: 30px;
+    font-size: 20px;
     text-align: center;
   }
 
@@ -41,11 +41,11 @@
           <div class="hero is-info is-fullwidth" style="height: 150px; text-align: center;">
            <div class="hero-body">
              <p class="title is-4"> 
-              {{ daily_sales }}
+              {{ new_average_daily }}
              </p>
            </div>
           </div>
-           <h2 class="subtitle">Average Daily</h2>
+           <h4 class="subtitle">Average Daily</h4>
          </article>
       </div>
       <div class="grid-item">
@@ -55,28 +55,28 @@
               <p class="title is-4"> 0.00 </p>
             </div>
            </div>
-          <h2 class="subtitle">Expenses</h2>
+          <h4 class="subtitle">Expenses</h4>
         </article>
       </div>
       <div class="grid-item">
         <article>
           <div class="hero is-info is-fullwidth" style="height: 150px; text-align: center;">
             <div class="hero-body">
-              <p class="title is-4"> {{ daily_invoices }} </p>
+              <p class="title is-4"> {{ new_result }} </p>
             </div>
            </div>
-          <h2 class="subtitle">Sales</h2>
+          <h4 class="subtitle">Sales</h4>
         </article>
       </div>
       <div class="grid-item">
         <article>
           <div class="hero is-info is-fullwidth" style="height: 150px; text-align: center;">
             <div class="hero-body">
-              <p class="title is-4"> {{ daily_invoices }} </p>
+              <p class="title is-4"> {{ new_count_invoices }} </p>
             </div>
             
            </div>
-          <h2 class="subtitle">Daily Invoices</h2>
+          <h4 class="subtitle">Daily Invoices</h4>
          
         </article>
       </div>
@@ -93,21 +93,30 @@
         </div>
         <div class="column">
             <canvas id="expenses"  style="width:100%;max-width:600px"></canvas>
-            <p class="p is-size-3">Monthly Expenses</p>
+            <p class="p is-size-3">Weekly Sales</p>
         </div>
 
-        <div class="column">
+        <!-- <div class="column">
             <canvas id="equity"  style="width:100%;max-width:600px"></canvas>
             <p class="p is-size-3">Equity</p>
-        </div>
+        </div> -->
     </div>
 </div>
 
 <script>
-    const xValues = [50,60,70,80,90,100,110,120,130,140,150];
-    const yValues = [7,8,8,9,9,9,10,11,14,14,15];
+    const xValues = ["November", "December", "January", "February", "March","April"];
+    const yValues = [
+        {% for i in new_result %}
+          "{{ i }}",
+        {% endfor %}
 
-    const yval2 = [31,26,34,37, 41,37,40,39, 37,33]
+    ];
+
+    const yval2 = [
+      {% for j in new_result %}
+        "{{ j }}",
+      {% endfor %}
+    ]
     
     const yval3 = [2,3,2,2,3,4,3,1,2,2]
 
@@ -120,13 +129,24 @@
           lineTension: 0,
           backgroundColor: "rgba(0,0,255,1.0)",
           borderColor: "rgba(0,0,255,0.1)",
-          data: yValues
+          data: yValues,
+          
         }]
       },
       options: {
         legend: {display: false},
+        
         scales: {
-          yAxes: [{ticks: {min: 6, max:16}}],
+          yAxes: [
+            {
+              ticks:
+             {
+              startAtZero: true,
+              max: 100
+             }
+             
+          }
+        ],   
         }
       }
     });
@@ -134,7 +154,7 @@
     new Chart("expenses", {
       type: "line",
       data: {
-        labels: xValues,
+        // labels: xValues,
         datasets: [{
           fill: false,
           lineTension: 0,
@@ -146,30 +166,40 @@
       options: {
         legend: {display: false},
         scales: {
-          yAxes: [{ticks: {min: 6, max:100}}],
-        }
+          yAxes: [{ticks: {min: 0, max:100}}],
+          // xAxes: [{
+          //   type: "time",
+          //   time: {
+          //     displayFormats: {"day": "MM/YY"},
+          //     unit: "month",
+              
+          //   }
+          // }]
+        },
+          
+
       }
     });
 
-    new Chart("equity", {
-      type: "line",
-      data: {
-        labels: xValues,
-        datasets: [{
-          fill: false,
-          lineTension: 0,
-          backgroundColor: "rgba(0,200,200,1.0)",
-          borderColor: "rgba(0,0,255,0.1)",
-          data: yval3
-        }]
-      },
-      options: {
-        legend: {display: false},
-        scales: {
-          yAxes: [{ticks: {min: 0, max:10}}],
-        }
-      }
-    });
+    // new Chart("equity", {
+    //   type: "line",
+    //   data: {
+    //     labels: xValues,
+    //     datasets: [{
+    //       fill: false,
+    //       lineTension: 0,
+    //       backgroundColor: "rgba(0,200,200,1.0)",
+    //       borderColor: "rgba(0,0,255,0.1)",
+    //       data: yval3
+    //     }]
+    //   },
+    //   options: {
+    //     legend: {display: false},
+    //     scales: {
+    //       yAxes: [{ticks: {min: 0, max:10}}],
+    //     }
+    //   }
+    // });
 
     </script>
 

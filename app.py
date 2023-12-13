@@ -231,6 +231,9 @@ class Invoice(db.Model):
     status = db.Column(db.String(20), default = 'closed')
     timestamp = db.Column(db.DateTime, default= datetime.now())
 
+    def __repr__(self):
+        return f'{self.amount}'
+
     def __init__(self, amount):
         self.amount = amount
 
@@ -348,11 +351,21 @@ class StocksView(ModelView):
         return False
    
 
+#WIP 
+
 
 class ReportsView(BaseView):
     @expose('/')
     def reports_view(self):
-        return self.render('admin/reports.html')
+        daily_sales = db.session.query(func.sum(Invoice.amount)).all()
+        new_result = str(daily_sales).strip('[](),')
+
+        daily_average_sales = db.session.query(func.avg(Invoice.amount)).all()
+        new_average_daily = str(daily_average_sales).strip('[](),')
+
+        count_invoices = db.session.query(func.count(Invoice.amount)).all()
+        new_count_invoices = str(count_invoices).strip('[](),')
+        return self.render('admin/reports.html', new_count_invoices = new_count_invoices,new_result = new_result, new_average_daily = new_average_daily)
 
     def is_accessible(self):
         if 'admin' in session:
@@ -404,7 +417,7 @@ class SalesView(BaseView):
         daily_invoices = db.session.query(Invoice).count()
         print('sales=',daily_sales)
         print('invoices=',daily_invoices)
-        return self.render('admin/index.html',daily_invoices=daily_invoices, daily_sales=str(daily_sales).strip('[] () ,'))
+        return self.render('admin/home.html',daily_invoices=daily_invoices, daily_sales=str(daily_sales).strip('[] () ,'))
 
 
     def is_accessible(self):
@@ -423,7 +436,7 @@ class StaffView(ModelView):
 
 
 admin = Admin(app, name='', template_mode='bootstrap3', index_view = InventoryView())
-# admin.add_view(SalesView(name='Sales', endpoint='sales'))
+admin.add_view(SalesView(name='Home', endpoint='sales'))
 admin.add_view(ProductView(Product, db.session))
 admin.add_view(CategoryView(Category, db.session))
 admin.add_view(BrandView(Brand, db.session))
@@ -531,24 +544,24 @@ def admin_index():
                 session['staff'] = username
                 return redirect(url_for('admin.index'))
             
-            if attempts == 3:
-                flag = True
-                flash('Temporarilyy disabled login!')
-            while flag:
-                mins, secs = divmod(1, 20)
-                timer = '{:02d}:{:02d}'.format(mins, secs)
-                time.sleep(1)
-                secs -=1
+            # if attempts == 3:
+            #     flag = True
+            #     flash('Temporarilyy disabled login!')
+            # while flag:
+            #     mins, secs = divmod(1, 20)
+            #     timer = '{:02d}:{:02d}'.format(mins, secs)
+            #     time.sleep(1)
+            #     secs -=1
                 # if secs == 0:
                 #     flag = False
                 #     attempts = 0
 
 
             flash('incorrect username or password!')
-            return redirect(url_for('index'))
+            return redirect(url_for('admin_index'))
     settings = Settings.query.limit(1).all()
     print('user is=', user)
-    return render_template('index.html', settings = settings, user = user, attempts = attempts)
+    return render_template('index.html', settings = settings, user = user)
 
 
 
@@ -605,6 +618,10 @@ def delete():
 @login_required
 def reports():
     user = session.get('admin', None)
+
+    chart_data = Invoice.query.all()
+
+    print("output data= ",chart_data)
     return render_template('reports.html', user = user)
 
 @app.route('/settings', methods = ['POST', 'GET'])
@@ -765,7 +782,6 @@ def checkout():
 @login_required
 def logout():
     session.clear()
-    flash('You are logged out')
     return redirect(url_for('index'))
 
 @app.before_request
