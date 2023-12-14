@@ -252,11 +252,15 @@ class InventoryView(AdminIndexView):
     @expose('/')
     def index(self):
         user = session.get('admin', None)
-        daily_sales = db.session.query(func.avg(Invoice.amount)).all()
-        new_sales = str(daily_sales).strip('[](),')
-        print('daily_sales=',str(daily_sales).strip('[](),'))
-        daily_invoices = db.session.query(Invoice).count()
-        return self.render('admin/index.html', daily_sales = new_sales, daily_invoices = daily_invoices ,user = user)
+        daily_sales = db.session.query(func.sum(Invoice.amount)).all()
+        new_result = str(daily_sales).strip('[](),')
+
+        daily_average_sales = db.session.query(func.avg(Invoice.amount)).all()
+        new_average_daily = str(daily_average_sales).strip('[](),')
+
+        count_invoices = db.session.query(func.count(Invoice.amount)).all()
+        new_count_invoices = str(count_invoices).strip('[](),')
+        return self.render('admin/reports.html', new_count_invoices = new_count_invoices,new_result = new_result, new_average_daily = new_average_daily)
 
 
 
@@ -354,7 +358,7 @@ class StocksView(ModelView):
 #WIP 
 
 
-class ReportsView(BaseView):
+class ReportsView(AdminIndexView):
     @expose('/')
     def reports_view(self):
         daily_sales = db.session.query(func.sum(Invoice.amount)).all()
@@ -427,7 +431,7 @@ class SalesView(BaseView):
 
 class StaffView(ModelView):
     form_excluded_columns = ['timestamp',]
-    column_list = ['user_id','timestamp',]
+    column_list = ['username', 'last_name', 'first_name','email']
 
     def is_accessible(self):
         if 'admin' in session:
@@ -435,14 +439,15 @@ class StaffView(ModelView):
         return False
 
 
-admin = Admin(app, name='', template_mode='bootstrap3', index_view = InventoryView())
-admin.add_view(SalesView(name='Home', endpoint='sales'))
-admin.add_view(ProductView(Product, db.session))
+admin = Admin(app, name='Admin', template_mode='bootstrap3', index_view = InventoryView())
+# admin.add_view(SalesView(name='Home', endpoint='sales'))
+
 admin.add_view(CategoryView(Category, db.session))
 admin.add_view(BrandView(Brand, db.session))
+admin.add_view(ProductView(Product, db.session))
 admin.add_view(StocksView(Stock,db.session))
 admin.add_view(InvoiceView(Invoice, db.session))
-admin.add_view(ReportsView(name='Reports', endpoint='reports'))
+# admin.add_view(ReportsView(name='Reports', endpoint='reports'))
 admin.add_view(StaffView(Staff, db.session))
 admin.add_view(SettingsView(Settings, db.session))
 # admin.add_view(LogoutView(name='Logout', endpoint='logout'))
@@ -705,6 +710,23 @@ def pos():
             return redirect(url_for('pos', all_items = all_items, arr = arr, qty = qty, total = total, user = user, admin = admin))
     
     return render_template('pos.html',arr =arr, all_items = all_items, user = user, admin = admin)
+
+
+@app.route('/void', methods = ['POST'])
+def void():
+    global arr
+    global qty
+    global subtotal
+    if request.method =='POST':
+        data = request.json
+        data_ = data['data']
+
+        if data_ and request.method == 'POST':
+            print('expected data ===',data_)
+            arr.remove(data_)
+            return redirect(url_for('pos', arr = arr, subtotal = subtotal, qty = qty, admin = admin))
+    return redirect(url_for('pos', arr = arr, total = total, qty = qty, admin = admin))
+    
 
 
 @app.route('/cancel', methods = ['POST'])
