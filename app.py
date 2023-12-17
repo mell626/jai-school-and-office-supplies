@@ -10,19 +10,20 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.config['FLASK_ADMIN_SWATCH'] = 'flatly'
 
 
+
 db = SQLAlchemy(app)
 arr = []
 qty = 0
 subtotal = []
 attempts = 0
+total = 0
 
 
 
 #database here ##########################################################
 class Administrator(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.String(255))
-    password = db.Column(db.String(255))
+    username = db.Column(db.String(255))    
     timestamp = db.Column(db.DateTime, default = datetime.now())
 
     def __init__(self, username, password):
@@ -346,7 +347,7 @@ class StocksView(ModelView):
     column_list = ['id','product', 'quantity', 'timestamp',]
     column_searchable_list = ['id', 'quantity',]
     column_display_pk = True
-    column_hide_backrefs = False
+    column_hide_backrefs = True
 
 
     def is_accessible(self):
@@ -663,13 +664,14 @@ def pos():
     user = session.get('staff', None)
     #WIP
     all_items = Product.query.all()
-    print('all items in inventory= ',all_items)
+    # print('all items in inventory= ',all_items)
     #WIP
-    session['total'] = 0
+    # session['total'] = 0
     global arr
     global qty
     global subtotal
-    total = session['total']
+    global total
+    # total = session['total']
     if request.method == 'POST':
         #only replaced BARCODE WITH NAME OF ITEM
         barcode = request.form['barcode']
@@ -694,7 +696,7 @@ def pos():
                     sum_of_qty = int(qty) * item.unit_price
                     subtotal.append(sum_of_qty)
                     total = sum(subtotal)
-                    print('items to be sent to the front END=', arr)
+                    # print('items to be sent to the front END=', arr)
                 elif int(stock.quantity) < int(quantity):
                     no_stock_data = [item.product_code, item.name, int(quantity) * 0, item.unit_price, stock.quantity]
                     
@@ -704,12 +706,23 @@ def pos():
                     arr.append(no_stock_data)
 
                     return render_template('pos.html',all_items = all_items ,arr = arr, qty = qty, total = total, user = user, admin = admin)
+                # print(arr)
                 return render_template('pos.html', all_items = all_items,arr = arr, qty = qty, total = total, user = user, admin = admin)
             
             flash('not found')
             return redirect(url_for('pos', all_items = all_items, arr = arr, qty = qty, total = total, user = user, admin = admin))
     
-    return render_template('pos.html',arr =arr, all_items = all_items, user = user, admin = admin)
+    return render_template('pos.html',arr =arr, all_items = all_items, total = total,user = user, admin = admin)
+
+# @app.route('/test', methods = ['POST'])
+# def test():
+#     if request.method == 'POST':
+#         data = request.get_json()
+
+#         if data and request.method == 'POST':
+#             return "DATA SUCCEEDED!!"
+
+#     return "INVALID"
 
 
 @app.route('/void', methods = ['POST'])
@@ -717,16 +730,52 @@ def void():
     global arr
     global qty
     global subtotal
-    if request.method =='POST':
-        data = request.json
-        data_ = data['data']
-
-        if data_ and request.method == 'POST':
-            print('expected data ===',data_)
-            arr.remove(data_)
-            return redirect(url_for('pos', arr = arr, subtotal = subtotal, qty = qty, admin = admin))
-    return redirect(url_for('pos', arr = arr, total = total, qty = qty, admin = admin))
+    global total
     
+    total = 0
+    new_subtotal = [float(j) for j in subtotal]
+    total = sum(new_subtotal) 
+
+    print('the old total is=',total)
+    
+    if request.method == 'POST':
+        dt = request.get_json()
+
+        if dt and request.method =='POST':
+            print("data have passed to the post api!!!")
+            new_data = int(dt['data'])
+
+            try:
+                sub = (arr[new_data][3])
+                total = total - float(sub)
+                print(total)
+                subtotal = total
+                print("the updated total=",subtotal)
+            except Exception as e:
+                print(e)
+            
+            arr.pop(new_data)
+            
+
+            print("the total is=", total)
+            return redirect(url_for('pos', arr = arr, total = total, subtotal = subtotal, qty = qty, admin = admin))
+        return redirect(url_for('pos', arr = arr,subtotal = subtotal, total = total, qty = qty, admin = admin))
+    return redirect(url_for('pos', arr = arr,subtotal = subtotal, total = total, qty = qty, admin = admin))
+
+
+# @app.route('/voiditem', methods = ['POST'])
+# def voiditem():
+#     global arr
+#     global qty
+#     global subtotal
+
+#     dt = request.json['data']
+#     if dt and request.method =='POST':
+#         print("DATA INSIDE THE POST API")
+#         return redirect(url_for('pos', arr = arr, subtotal = subtotal, qty = qty, admin = admin))
+#     # return redirect(url_for('pos', arr = arr, subtotal = subtotal, qty = qty, admin = admin))
+#     return redirect(url_for('pos', arr = arr, subtotal = subtotal, qty = qty, admin = admin))
+
 
 
 @app.route('/cancel', methods = ['POST'])
@@ -815,6 +864,30 @@ def init_db():
         db.session.add(default_setting)
         db.session.commit()
         print('database created')
+
+
+#unused codes
+
+# print("BEFORE DATA PROCESSING===", d)
+            # flat_list = []
+            # for i in d:
+            #     for j in i:
+            #         flat_list.append(j)
+            # flat_list[1:4] = [' '.join(flat_list[1:4])]
+            # deleted_last_index = flat_list[:-1]
+            # new_arr_last_index_deleted = [i for i[:-1] in arr]
+            # new_list2 = [i for i in d if(list(i) != deleted_last_index)]
+            # new_list2 = arr.remove(deleted_last_index)
+            # filtered_list = [ not i for i in new_arr_last_index_deleted if(list(i) == deleted_last_index)]
+            # print("flat list=",deleted_last_index)
+            # arr = [i for i in d if (list(i) == deleted_last_index)]
+            # print("INPUT DATA AFTER DATA PROCESSING=",d)
+            # print("filtered array=", filtered_list)
+
+
+
+
+
 
 
 if __name__ == '__main__':

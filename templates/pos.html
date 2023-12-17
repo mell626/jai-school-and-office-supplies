@@ -88,6 +88,7 @@
                     <div class="column"><button id="checkout" style="margin-right: 10px;" class="button is-primary is-large">CHECKOUT</button></div>
                 </div>
                 <div class="columns">
+                  
                   <div class="column"><button id="void" class="button is-warning is-large" style="margin-left: 30px;">VOID</button></div>
                 </div>
         </div>
@@ -185,20 +186,9 @@
  
 
 
-
-
-  // $(function(){
-  //   $('table tbody tr #td-price').each(function(idx, val){
-  //     let total = parseFloat( {{ qty }} * $(this).text());
-  //     total_amount += total;
-  //     console.log('total amount ' + {{ qty }});
-  //     $('#total').text(total_amount)     
-  //   })
-  // })
-
-
   // variable which holds the item to be removed 
   let dt;
+  let newArray = [];
 
   $(document).ready(function(){
    $("#table tr").on("click", function(){
@@ -206,34 +196,55 @@
       $(this).css("background-color", "blue");
       $(this).css("color", "white");
 
-      dt = $(this).find('td:eq(1)').text();
+      // let row = $(this).parent().parent();
+      // let rowIndex = $(row[0].rowIndex);
+      // console.log(rowIndex);
+
+      dt = $(this).index();
+      // alert(dt);
+      // let sliceData = dt.split(' ');
+      // newArray.push(sliceData);
    });
   });
 
 
   //REMOVE SPECIFIC ROW
-  $(document).ready(function(){
-    $('#void').click(function(){
-      if(confirm("are you sure you want to void "+ dt) == true) {
-        $.ajax({
-        type: "POST",
-        url: 'http://localhost:5000/void',
-        headers: {
-          'Content-type': 'application/json',
-          'Accept': 'application/json'
-        },
-        data: JSON.stringify({'data': dt}), 
-        success: function(res) {
-          console.log("SUCCESS");
-        },
-        error: function(res) {
-          console.log("ERROR!");
-        }
-      });
-      }
+
+
+
+async function deleteData() {
+  let data = dt;
+  await fetch(" {{ url_for('void') }} ", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json; charset=UTF-8"
+    },
+    body: JSON.stringify({  
+      data: dt
 
     })
+  }).then((res)=> {
+    return res.json();
+  
   })
+  .then((json)=> {
+  }).catch((e)=> {
+    console.log(e);
+  })
+}
+
+  $(document).ready(function(){
+    $("#void").click(function(e){
+      if(confirm("Are you sure to delete this item?") == true) {
+        deleteData();
+        setTimeout(() => {
+        $("#table").load(location.href + "#table");
+        },2000);
+      }
+     
+      
+    });
+  });
 
 
 
@@ -244,7 +255,6 @@
         url: 'http://localhost:5000/cancel',
         success: function(result){
           console.log('cleared!');
-
         },
         error: function(res){
           console.log('error!');
