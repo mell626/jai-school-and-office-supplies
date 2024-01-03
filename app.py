@@ -119,10 +119,17 @@ class Sales(db.Model):
         self.sales_amount = 0
 
 
+categories = db.Table(
+    'categories',
+    db.Column('category_id', db.Integer, db.ForeignKey('category.id')),
+    db.Column('product_id', db.Integer, db.ForeignKey('product.id'))
+)
+
+
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String(255))
-    products = db.Column(db.Integer, db.ForeignKey('product.id'))
+    # products = db.Column(db.Integer, db.ForeignKey('product.id')) # will be the handler of 'TYPE'
     # category_id = db.relationship('Product', backref='category', lazy=True, uselist = False)
     timestamp = db.Column(db.DateTime, default= datetime.now())
 
@@ -136,14 +143,14 @@ class Category(db.Model):
         return self.name
 
 
-class Brand(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(255), unique = True)
-    product = db.Column(db.Integer, db.ForeignKey('product.id'))
-    timestamp = db.Column(db.DateTime, default= datetime.now())
+# class Brand(db.Model):
+#     id = db.Column(db.Integer, primary_key = True)
+#     name = db.Column(db.String(255), unique = True)
+#     product = db.Column(db.Integer, db.ForeignKey('product.id'))
+#     timestamp = db.Column(db.DateTime, default= datetime.now())
 
-    def __repr__(self):
-        return f'{self.name}'
+#     def __repr__(self):
+#         return f'{self.name}'
 
 
 
@@ -153,6 +160,7 @@ class Stock(db.Model):
     # products = db.relationship('Product', backref='stock', lazy=True)
     quantity = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime, default= datetime.now())
+
 
     def check_available_stock(self):
         return self.session.query(self.model).filter(self.model.quantity >=0)
@@ -172,28 +180,27 @@ class Stock(db.Model):
         self.is_out_of_stock =  False
 
 
-
+#the TYPE class
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    product_code = db.Column(db.String(100))
+    category_id= db.relationship('Category', secondary=categories, backref = 'category', lazy = True, uselist = False)
+    product_type = db.Column(db.String(255))
+    brand = db.Column(db.String(255))
+    quantity = db.Column(db.Integer) # per box
+    comment = db.Column(db.Text)
     name = db.Column(db.String(255))
-    details = db.Column(db.Text)
     unit_price = db.Column(db.Float)
-    brand = db.relationship('Brand', backref='product-brand', lazy = True)
-    # purchases = db.relationship('Purchase', backref='product', lazy = 'dynamic')
     stock_id = db.Column(db.Integer, db.ForeignKey('stock.id'))
-    # products = db.Column(db.Integer, db.ForeignKey('category.id'))
-    category_id = db.relationship('Category', backref='product', lazy=True)
     timestamp = db.Column(db.DateTime, default= datetime.now())
-    # def __init__(self,category_id, product_code, name, details, unit_price):
-    #     self.product_code = product_code
-    #     self.name = name
-    #     self.details = details
-    #     self.unit_price = unit_price
+    
+    # purchases = db.relationship('Purchase', backref='product', lazy = 'dynamic')
+    # products = db.Column(db.Integer, db.ForeignKey('category.id'))
+   
+    # def __repr__(self):
+    #     return f'{self.name}'
 
-    def __repr__(self):
+    def __str__(self):
         return f'{self.name}'
-
 
 class Staff(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -275,7 +282,7 @@ class ProductView(ModelView):
     can_export = True
     can_edit = True
     form_excluded_columns = ['timestamp', 'stock',]
-    column_list = ['category_id','brand','product_code','name', 'details', 'unit_price',]
+    column_list = ['category_id','brand','name', 'comment', 'unit_price',]
 
     def is_accessible(self):
         if 'admin' or 'staff' in session:
@@ -444,7 +451,6 @@ admin = Admin(app, name='Admin', template_mode='bootstrap3', index_view = Invent
 # admin.add_view(SalesView(name='Home', endpoint='sales'))
 
 admin.add_view(CategoryView(Category, db.session))
-admin.add_view(BrandView(Brand, db.session))
 admin.add_view(ProductView(Product, db.session))
 admin.add_view(StocksView(Stock,db.session))
 admin.add_view(InvoiceView(Invoice, db.session))
@@ -677,6 +683,7 @@ def pos():
         barcode = request.form['barcode']
         quantity = request.form['qty']
         if barcode and quantity and request.method == 'POST':
+            #WIP
             item = Product.query.filter_by(name=barcode).first()
             if item:
                 #stock query ===========================================
@@ -687,18 +694,27 @@ def pos():
                     db.session.commit()
                     #WIP
                 #=======================================================
-                
-                data = [item.product_code, item.name,int(quantity), item.unit_price, stock.quantity]
+
+                data = [item.name,int(quantity), item.unit_price, stock.quantity, item.category_id, item.brand]
+                print("output data=")
+                print(data)
                 if stock.quantity > 0:
                     arr.append(data)
                     
                     qty = quantity
                     sum_of_qty = int(qty) * item.unit_price
-                    subtotal.append(sum_of_qty)
-                    total = sum(subtotal)
+                    #WIP 
+                    try:
+                        subtotal.append(sum_of_qty)
+                        total += sum_of_qty
+                        total = sum(subtotal)
+                    except Exception as e:
+                        # total += sum_of_qty
+                        # total = sum(subtotal)
+                        print('error here')
                     # print('items to be sent to the front END=', arr)
                 elif int(stock.quantity) < int(quantity):
-                    no_stock_data = [item.product_code, item.name, int(quantity) * 0, item.unit_price, stock.quantity]
+                    no_stock_data = [item.name, int(quantity) * 0, item.unit_price, stock.quantity]
                     
                     stock.quantity = 0
                     db.session.commit()
@@ -756,7 +772,6 @@ def void():
             
             arr.pop(new_data)
             
-
             print("the total is=", total)
             return redirect(url_for('pos', arr = arr, total = total, subtotal = subtotal, qty = qty, admin = admin))
         return redirect(url_for('pos', arr = arr,subtotal = subtotal, total = total, qty = qty, admin = admin))
@@ -802,6 +817,7 @@ def cancel():
 def checkout():
     global arr
     global subtotal
+    global total
     subt = 0
     if request.method =='POST':
         subtotal_amount = request.form['subtotal']
@@ -820,7 +836,7 @@ def checkout():
             f.write('==================================' + '\n')
             # f.write('item'.jlust(0) + 'qty'.center(5) + 'unit p.'.rjust(10))
             for line in arr:
-                f.write("{} {} {} {}".format(line[1].ljust(0), str(line[2]).center(5), str(line[3]).rjust(10), '\n'))
+                f.write("{} {} {} {}".format(line[0].ljust(0), str(line[2]).center(5), str(line[3]).rjust(10), '\n'))
             f.write('==================================' + '\n')
             f.write('        OFFICIAL RECEIPT          ' + '\n\n')
             f.write('date: ' + str(datetime.now().strftime('%m/%d/%Y- %H:%M')) +'\n')
@@ -832,6 +848,7 @@ def checkout():
             arr = []
             subtotal = []
             session['total'] = 0
+            total = 0
 
             webbrowser.open('invoice.txt')
 

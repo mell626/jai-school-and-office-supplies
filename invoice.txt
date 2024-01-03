@@ -1,10 +1,11 @@
   J AI Office and School Supplies
 ==================================
-paper scissor   1         25.0 
+panda red ballpen  7.0          97 
+panda red ballpen  7.0          96 
 ==================================
         OFFICIAL RECEIPT          
 
-date: 12/17/2023- 23:27
-Total Amount:                    25.0 
+date: 01/03/2024- 08:36
+Total Amount:                    28.0 
 Amount Tendered:                   30
-Change:                         5.0
+Change:                         2.0

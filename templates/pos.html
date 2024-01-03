@@ -31,7 +31,6 @@
                 <table class="table is-narrow is-fullwidth" style="max-height: 400px; border: 1px solid black; overflow-y: scroll;" id="table">
                     <thead>
                         <tr>
-                            <th>code</th>
                             <th>product</th>
                             <th>unit price</th>
                             <th>qty.</th>
@@ -39,29 +38,28 @@
                     </thead>
                     {% if arr %}
                       {% for i in arr %}
-                        {% if i[4] <=10 and i[4] >5 %}
+                        {% if i[3] <=10 and i[3] >5 %}
                         <tr style="background-color: orange;" id="rows">
                           <td>{{ i[0] }} </td>
-                          <td id="item-name">{{ i[1] }}</td>
-                          <td id="td-price"> {{ i[3] }} </td>
-                          <td>{{ i[2] }} </td>
+                          <td id="item-name">{{ i[2] }}</td>
+                          <td id="td-price"> {{ i[1] }} </td>
+                          <!-- <td>{{ i[2] }} </td> -->
                           </tr>
-                        {% elif i[4] <= 5 %}
+                        {% elif i[3] <= 5 %}
                         <tr style="background-color: red;" id="rows">
                           <td>{{ i[0] }} </td>
-                          <td>{{ i[1] }}</td>
-                          <td id="td-price"> {{ i[3] }} </td>
-                          <td>{{ i[2] }} </td>
+                          <td>{{ i[2] }}</td>
+                          <td id="td-price"> {{ i[1] }} </td>
+                          
                           </tr>
                         {% else %}
                         <tr>
                           <td>{{ i[0] }} </td>
-                          <td>{{ i[1] }}</td>
-                          <td id="td-price"> {{ i[3] }} </td>
-                          <td>{{ i[2] }} </td>
+                          <td>{{ i[2] }}</td>
+                          <td id="td-price"> {{ i[1] }} </td>
+                          <!-- <td>{{ i[2] }} </td> -->
                           </tr>
                       {% endif %}
-                           
                       {% endfor %}
                     {% endif %}
                     <tbody>
@@ -88,7 +86,6 @@
                     <div class="column"><button id="checkout" style="margin-right: 10px;" class="button is-primary is-large">CHECKOUT</button></div>
                 </div>
                 <div class="columns">
-                  
                   <div class="column"><button id="void" class="button is-warning is-large" style="margin-left: 30px;">VOID</button></div>
                 </div>
         </div>
@@ -240,13 +237,9 @@ async function deleteData() {
         setTimeout(() => {
         $("#table").load(location.href + "#table");
         },2000);
-      }
-     
-      
+      } 
     });
   });
-
-
 
   $(document).ready(function(){
     $('#cancel').click(function(e){
