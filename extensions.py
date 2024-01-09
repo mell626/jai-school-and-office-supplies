@@ -10,6 +10,6 @@ from flask_admin.contrib.sqla import ModelView
 from collections import Counter
 import os
 from datetime import datetime
-from sqlalchemy import func
+from sqlalchemy import func, text
 import time
 import webbrowser

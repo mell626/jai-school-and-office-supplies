@@ -79,9 +79,31 @@
          
         </article>
       </div>
-    </div>
-  
+    </div>  
       </section>
+      <br><br>
+      <div class="container" style="align-items: center; width: 95%;height: 300px; border: 1px solid gray;">
+        <table id="critical-stocks" style="width: 100%;">
+          <tr>Critical Stocks</tr>
+          <tr style="background-color: gray;">
+            <th>ID</th>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Status</th>
+          </tr>
+          <tbody>
+            {% for i in critical_stocks %}
+              <tr>
+                <td> {{ i.id }} </td>
+                <td> {{ i.name }} </td>
+                <td> {{ i.quantity }} </td>
+                <td> {{ i.status }} </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+  </div>
 
 
     <br><br>
@@ -100,7 +122,7 @@
             <p class="p is-size-3">Equity</p>
         </div> -->
     </div>
-</div>
+
 
 <script>
     const xValues = ["November", "December", "January", "February", "March","April"];

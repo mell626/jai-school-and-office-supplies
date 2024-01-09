@@ -1,0 +1,142 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script> 
+
+<br><br>
+
+<fieldset>    
+    <legend>Category</legend>   
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-2">
+                <form method="POST" name="cats">
+                    <label for="category">Select Category:</label>
+                    <select name="category" id="category" class="form-control input-sm">
+                        {% for i in data %}
+                            <option value=" {{ i }} " id="pickup"> {{ i }} </option>
+                        {% endfor %}
+                    </select>
+                    </form>
+            </div>
+            <div class="col-xs-2">
+                <form action="http://localhost:5000/add-category" method="POST">
+                    <input type="hidden" name="category1" id="category1" val="">
+                    <label for="type">Select Type:</label>
+                    <br>
+                    <select name="type" id="type" class="form-control input-sm">
+                        {% if types %}
+                            {% for j in types %}
+                            <option value=" {{ j }} "> {{ j }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+            </div>
+            <div class="col-xs-2">
+                <label for="brand">Select Brand:</label>
+                        <select class="form-control input-sm" name="brand" id="brand">
+                            {% for i in brand %}
+                            <option value=" {{ i }} ">{{ i }}</option>
+                            {% endfor %}
+                        </select>  
+            </div>
+            <div class="col-xs-2">
+                <label for="quantity">Quantity:</label>
+                <br>
+                <select class="form-control input-sm" name="quantity" id="quantity">
+                    <option value="ream">ream</option>
+                    <option value="box">box</option>
+                    <option value="pcs">pcs</option>
+                </select>
+            </div>
+            <div class="col-xs-4">
+                <label for="comment">Comment:</label>
+                <br>
+                <input class="form-control input-sm" type="text" name="comment" id="comment">
+                <br>
+                
+            
+            </div>
+            <input type="submit" value="ADD" class="btn btn-info">
+        </form>
+        </div>
+    </div>
+</fieldset>
+<br><br>
+<table class="table table-stripped">
+    <thead>
+        <tr style="background-color: gray;">
+            <th>id</th>
+            <th>category</th>
+            <th>type</th>
+            <th>brand</th>
+            <th>quantity</th>
+            <th>comment</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in all_categories %}
+            <tr>
+                <td>{{ i.id }}</td>
+                <td>{{ i.name }}</td>
+                <td> {{ i.types }} </td>
+                <td> {{ i.brand }} </td>
+                <td> {{ i.quantity }} </td>
+                <td> {{ i.comment }} </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+
+</table>
+
+<script>
+    $(document).ready(function(){
+        $("#category").on("change", function(e){     
+            localStorage.setItem('storedPickup', $(this).val());
+            document.forms['cats'].submit();
+        });
+    })
+
+    $(document).ready(function(){
+        let data = localStorage.getItem('storedPickup')
+        $("#pickup").text(data);
+        $("#category1").val(data);
+    })
+    // $(document).ready(function(){
+    //     let loadedPickup = JSON.parse(localStorage.getItem('storedPickup'));
+    //     $('#categpry #pickup').val(loadedPickup);
+    //     $('#category #pickup').text(loadedPickup);
+    //     console.log("loaded pickup is="+loadedPickup);
+    //     
+    // })
+
+    // $(document).ready(function(){
+    //     let selectedType = $("#type").find(":selected").text();
+    //     let selectedBrand = $("#brand").find(":selected").text();
+    //     let selectedQuantity = $("#quantity").find(":selected").text();
+    //     let comment = $("#comment").val();
+    //     $("#add").click(function(){
+    //         $.ajax({
+    //             type: "POST",
+    //             url: "http://localhost:5000/add-category",
+    //             data: {
+    //                 category: $('#cat').val(),
+    //                 type: selectedType,
+    //                 brand: selectedBrand,
+    //                 quantity: selectedQuantity,
+    //                 comment: comment
+    //             },
+    //             success: function(res) {
+    //                 alert(res.data);
+    //             },
+    //             error: function(resp) {
+    //                 alert(resp.data);
+    //             }
+
+    //         })
+    //     })
+    // });
+
+</script>
+{% endblock body %}

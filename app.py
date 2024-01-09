@@ -129,12 +129,18 @@ categories = db.Table(
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String(255))
-    # products = db.Column(db.Integer, db.ForeignKey('product.id')) # will be the handler of 'TYPE'
-    # category_id = db.relationship('Product', backref='category', lazy=True, uselist = False)
+    types = db.Column(db.String(255))
+    brand = db.Column(db.String(255))
+    quantity = db.Column(db.Integer)
+    comment = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default= datetime.now())
 
-    def __init__(self, name):
+    def __init__(self, name, types, brand, quantity,comment):
         self.name = name
+        self.types = types
+        self.brand = brand
+        self.quantiy = quantity
+        self.comment = comment
 
     def __repr__(self):
         return f'{self.name}'
@@ -143,21 +149,32 @@ class Category(db.Model):
         return self.name
 
 
-# class Brand(db.Model):
-#     id = db.Column(db.Integer, primary_key = True)
-#     name = db.Column(db.String(255), unique = True)
-#     product = db.Column(db.Integer, db.ForeignKey('product.id'))
-#     timestamp = db.Column(db.DateTime, default= datetime.now())
+class Type(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(255))
+    category = db.Column(db.String(255))
+    timestamp = db.Column(db.DateTime, default= datetime.now())
 
-#     def __repr__(self):
-#         return f'{self.name}'
+    def __str__(self):
+        return self.name
+
+
+
+class BrandName(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(255))
+    timestamp = db.Column(db.DateTime, default= datetime.now())
+
+    def __str__(self):
+        return self.name
+
 
 
 
 class Stock(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     product = db.relationship('Product', backref = 'stock', lazy=True)
-    # products = db.relationship('Product', backref='stock', lazy=True)
+    received_quantity = db.Column(db.Integer)
     quantity = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime, default= datetime.now())
 
@@ -301,16 +318,27 @@ class BrandView(ModelView):
     column_hide_backrefs = False
 
 
-class CategoryView(ModelView):
-    page_size = 25
-    column_searchable_list = ['name',]
-    form_excluded_columns = ['timestamp']
-    can_export = False
-    create_modal = True
-    edit_modal = True
-    column_display_pk = True
-    column_hide_backrefs = False
-    
+class CategoryView(BaseView):
+    @expose('/', methods = ['POST', 'GET'])
+    def index(self):
+        types = []
+        brand = []
+        with open('lookups/category.csv') as lookup:
+            reader = csv.reader(lookup)
+            data = [i.strip() for i in lookup] 
+        brands = BrandName.query.all()
+        for i in brands:
+            brand.append(i)
+        if request.method =='POST':
+            category = request.form['category']
+            if category and request.method =='POST':
+               res = Type.query.filter_by(category=category.strip()).all()
+               for i in res:
+                    types.append(i)
+        
+        all_categories = Category.query.all()
+
+        return self.render('admin/category.html', data = data, types = types, brand = brand, all_categories = all_categories)
 
     def is_accessible(self):
         if 'admin' or 'staff' in session:
@@ -351,7 +379,7 @@ class SettingsView(ModelView):
 class StocksView(ModelView):
     column_display_pk = True
     column_hide_backrefs = False
-    column_list = ['id','product', 'quantity', 'timestamp',]
+    column_list = ['id','product', 'received_quantity' , 'quantity', 'timestamp',]
     column_searchable_list = ['id', 'quantity',]
     column_display_pk = True
     column_hide_backrefs = True
@@ -369,15 +397,19 @@ class StocksView(ModelView):
 class ReportsView(AdminIndexView):
     @expose('/')
     def reports_view(self):
+
         daily_sales = db.session.query(func.sum(Invoice.amount)).all()
         new_result = str(daily_sales).strip('[](),')
 
         daily_average_sales = db.session.query(func.avg(Invoice.amount)).all()
         new_average_daily = str(daily_average_sales).strip('[](),')
 
+        critical_stocks = Stock.query.all()
+
+        
         count_invoices = db.session.query(func.count(Invoice.amount)).all()
         new_count_invoices = str(count_invoices).strip('[](),')
-        return self.render('admin/reports.html', new_count_invoices = new_count_invoices,new_result = new_result, new_average_daily = new_average_daily)
+        return self.render('admin/reports.html', new_count_invoices = new_count_invoices,new_result = new_result, new_average_daily = new_average_daily, critical_stocks = critical_stocks)
 
     def is_accessible(self):
         if 'admin' in session:
@@ -449,8 +481,7 @@ class StaffView(ModelView):
 
 admin = Admin(app, name='Admin', template_mode='bootstrap3', index_view = InventoryView())
 # admin.add_view(SalesView(name='Home', endpoint='sales'))
-
-admin.add_view(CategoryView(Category, db.session))
+admin.add_view(CategoryView(name='Category', endpoint='category'))
 admin.add_view(ProductView(Product, db.session))
 admin.add_view(StocksView(Stock,db.session))
 admin.add_view(InvoiceView(Invoice, db.session))
@@ -575,6 +606,25 @@ def admin_index():
     print('user is=', user)
     return render_template('index.html', settings = settings, user = user)
 
+
+
+#add new category
+@app.route('/add-category', methods = ['POST'])
+def add_category():
+    if request.method == 'POST':
+        category = request.form['category1']
+        types = request.form['type']
+        brand = request.form['brand']
+        quantity = request.form['quantity']
+        comment = request.form['comment']
+
+        if category and types and brand and quantity and comment and request.method =='POST':
+            data = Category(category,types,brand,quantity,comment)
+            db.session.add(data)
+            db.session.commit()
+            # print('picked up data=', category, types, brand, quantity, comment)
+            return redirect('http://localhost:5000/admin/category')
+        return redirect('http://localhost:5000/admin/category')
 
 
 @app.route('/sales')
