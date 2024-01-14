@@ -27,7 +27,7 @@
     <div class="columns">
         <div class="column is-8">
             <div class="container">
-              <div class="container" style="height: 400px; background-color: gray">
+              <div class="container" id="for-pos" style="height: 400px; background-color: gray">
                 <table class="table is-narrow is-fullwidth" style="max-height: 400px; border: 1px solid black; overflow-y: scroll;" id="table">
                     <thead>
                         <tr>
@@ -40,7 +40,7 @@
                       {% for i in arr %}
                         {% if i[3] <=10 and i[3] >5 %}
                         <tr style="background-color: orange;" id="rows">
-                          <td>{{ i[0] }} </td>
+                          <td>{{ i[4]}} {{ i[0] }} {{ i[5] }} </td>
                           <td id="item-name">{{ i[2] }}</td>
                           <td id="td-price"> {{ i[1] }} </td>
                           <!-- <td>{{ i[2] }} </td> -->
@@ -54,7 +54,7 @@
                           </tr>
                         {% else %}
                         <tr>
-                          <td>{{ i[0] }} </td>
+                          <td>{{ i[4] }} {{ i[0] }} {{ i[5] }} </td>
                           <td>{{ i[2] }}</td>
                           <td id="td-price"> {{ i[1] }} </td>
                           <!-- <td>{{ i[2] }} </td> -->
@@ -159,18 +159,12 @@
     })
   })
 
-
-  // style the table row depending on the stock value
-
-
-
-
   // fetch all products in database 
 
   $(function(){
   let all_data = [
     {% for i in all_items %}
-      "{{ i }}",
+      "{{ i.pos_name() }}",
     {% endfor %}
   ]
 
@@ -180,7 +174,6 @@
 
   });
   
- 
 
 
   // variable which holds the item to be removed 
@@ -189,7 +182,6 @@
 
   $(document).ready(function(){
    $("#table tr").on("click", function(){
-
       $(this).css("background-color", "blue");
       $(this).css("color", "white");
 
@@ -198,6 +190,7 @@
       // console.log(rowIndex);
 
       dt = $(this).index();
+
       // alert(dt);
       // let sliceData = dt.split(' ');
       // newArray.push(sliceData);
@@ -206,9 +199,6 @@
 
 
   //REMOVE SPECIFIC ROW
-
-
-
 async function deleteData() {
   let data = dt;
   await fetch(" {{ url_for('void') }} ", {
@@ -255,6 +245,7 @@ async function deleteData() {
       })
     });
   });
+
 
   // $(document).ready(function(){
   //   $('#barcode-form').submit(function(){

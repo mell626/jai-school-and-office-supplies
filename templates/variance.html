@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+{% with message = get_flashed_messages() %}
+  {% if message %}
+    {% for msg in message %}
+    <section class="notification is-warning"> {{ msg }} </section>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+<br>
+<div class="container">
+    <div class="columns">
+        <div class="column">
+            <fieldset>
+                <legend>Add new category type</legend>
+                <br>
+                <form method="POST">
+                    <label for="category">Category:</label>
+                    <div class="select">
+                        <select name="category" id="category">
+                            {% for i in data %}
+                                <option value=" {{ i }} " style="width: 100%;"> {{ i }} </option>
+                            {% endfor %}
+                        </select>                       
+                    </div>
+                    <br><br>
+                    <label for="type">Type:</label>
+                    <input type="text" name="type" id="type" class="input" placeholder="Enter new category type">
+                    <br><br>
+                    <input type="submit" value="ADD" class="button is-primary is-pulled-right">
+                </form>
+            </fieldset>
+        </div>
+        <div class="column"></div>
+        <div class="column">
+            <fieldset>
+                <legend>Add new brand name:</legend>
+                <br>
+                <form method="POST" action=" {{ url_for('brand') }} ">
+                    <label for="brand">Brand:</label>
+                    <input class="input" type="text" id="brand" name="brand" placeholder="Enter new brand">
+                    <br><br>
+                    <input type="submit" value="ADD" class="button is-primary is-pulled-right">
+                </form>
+            </fieldset>
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock %}

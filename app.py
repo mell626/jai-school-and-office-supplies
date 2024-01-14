@@ -14,7 +14,7 @@ app.config['FLASK_ADMIN_SWATCH'] = 'flatly'
 db = SQLAlchemy(app)
 arr = []
 qty = 0
-subtotal = []
+subtotal = 0
 attempts = 0
 total = 0
 
@@ -119,61 +119,17 @@ class Sales(db.Model):
         self.sales_amount = 0
 
 
-categories = db.Table(
-    'categories',
-    db.Column('category_id', db.Integer, db.ForeignKey('category.id')),
-    db.Column('product_id', db.Integer, db.ForeignKey('product.id'))
-)
-
-
-class Category(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(255))
-    types = db.Column(db.String(255))
-    brand = db.Column(db.String(255))
-    quantity = db.Column(db.Integer)
-    comment = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, default= datetime.now())
-
-    def __init__(self, name, types, brand, quantity,comment):
-        self.name = name
-        self.types = types
-        self.brand = brand
-        self.quantiy = quantity
-        self.comment = comment
-
-    def __repr__(self):
-        return f'{self.name}'
-    
-    def __str__(self):
-        return self.name
-
-
-class Type(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(255))
-    category = db.Column(db.String(255))
-    timestamp = db.Column(db.DateTime, default= datetime.now())
-
-    def __str__(self):
-        return self.name
-
-
-
-class BrandName(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(255))
-    timestamp = db.Column(db.DateTime, default= datetime.now())
-
-    def __str__(self):
-        return self.name
-
-
+# categories = db.Table(
+#     'categories',
+#     db.Column('category_id', db.Integer, db.ForeignKey('category.id')),
+#     db.Column('product_id', db.Integer, db.ForeignKey('product.id'))
+# )
 
 
 class Stock(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    product = db.relationship('Product', backref = 'stock', lazy=True)
+    category = db.relationship('Category', backref = 'stock', lazy=True)
+    unit_price = db.Column(db.Float)
     received_quantity = db.Column(db.Integer)
     quantity = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime, default= datetime.now())
@@ -197,18 +153,71 @@ class Stock(db.Model):
         self.is_out_of_stock =  False
 
 
-#the TYPE class
-class Product(db.Model):
+
+class Category(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    category_id= db.relationship('Category', secondary=categories, backref = 'category', lazy = True, uselist = False)
-    product_type = db.Column(db.String(255))
-    brand = db.Column(db.String(255))
-    quantity = db.Column(db.Integer) # per box
-    comment = db.Column(db.Text)
     name = db.Column(db.String(255))
-    unit_price = db.Column(db.Float)
-    stock_id = db.Column(db.Integer, db.ForeignKey('stock.id'))
+    types = db.Column(db.String(255))
+    brand = db.Column(db.String(255))
+    quantity = db.Column(db.Integer)
+    comment = db.Column(db.Text)
+    stocks = db.Column(db.Integer, db.ForeignKey('stock.id'))
     timestamp = db.Column(db.DateTime, default= datetime.now())
+
+    def __init__(self, name, types, brand, quantity,comment):
+        self.name = name
+        self.types = types
+        self.brand = brand
+        self.quantiy = quantity
+        self.comment = comment
+
+    def identifier(self):
+        return self.name
+    
+    def __repr__(self):
+        return f'{self.id}'
+
+    def pos_name(self):
+        return f'{self.id}{self.brand} {self.name} {self.types}'
+
+
+class Type(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(255))
+    category = db.Column(db.String(255))
+    timestamp = db.Column(db.DateTime, default= datetime.now())
+
+    def __str__(self):
+        return self.name
+
+    def __init__(self, name, category):
+        self.name = name
+        self.category = category
+
+
+class BrandName(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(255))
+    timestamp = db.Column(db.DateTime, default= datetime.now())
+
+    def __str__(self):
+        return self.name
+
+    def __init__(self, name):
+        self.name = name
+
+#the TYPE class
+# class Product(db.Model):
+#     id = db.Column(db.Integer, primary_key = True)
+#     category_id= db.relationship('Category', secondary=categories, backref = 'category', lazy = True, uselist = False)
+#     product_type = db.Column(db.String(255))
+#     brand = db.Column(db.String(255))
+#     quantity = db.Column(db.Integer) # per box
+#     comment = db.Column(db.Text)
+#     name = db.Column(db.String(255))
+#     unit_price = db.Column(db.Float)
+#     stock_id = db.Column(db.Integer, db.ForeignKey('stock.id'))
+#     timestamp = db.Column(db.DateTime, default= datetime.now())
     
     # purchases = db.relationship('Purchase', backref='product', lazy = 'dynamic')
     # products = db.Column(db.Integer, db.ForeignKey('category.id'))
@@ -218,6 +227,7 @@ class Product(db.Model):
 
     def __str__(self):
         return f'{self.name}'
+
 
 class Staff(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -244,10 +254,10 @@ class Settings(db.Model):
         self.contact_information = contact_information
 
     
-class Purchase(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
-    timestamp = db.Column(db.DateTime, default= datetime.now())
+# class Purchase(db.Model):
+#     id = db.Column(db.Integer, primary_key = True)
+#     product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+#     timestamp = db.Column(db.DateTime, default= datetime.now())
 
 
 class Invoice(db.Model):
@@ -283,32 +293,34 @@ class InventoryView(AdminIndexView):
         daily_average_sales = db.session.query(func.avg(Invoice.amount)).all()
         new_average_daily = str(daily_average_sales).strip('[](),')
 
+        critical_stocks = Stock.query.all()
+
         count_invoices = db.session.query(func.count(Invoice.amount)).all()
         new_count_invoices = str(count_invoices).strip('[](),')
-        return self.render('admin/reports.html', new_count_invoices = new_count_invoices,new_result = new_result, new_average_daily = new_average_daily)
+
+        return self.render('admin/reports.html', new_count_invoices = new_count_invoices,new_result = new_result, new_average_daily = new_average_daily, critical_stocks = critical_stocks)
 
 
 
-class ProductView(ModelView):
-    page_size=25
-    column_searchable_list = ['name',]
-    create_modal = True
-    edit_modal = True
-    column_display_pk = True
-    column_hide_backrefs = False
-    can_export = True
-    can_edit = True
-    form_excluded_columns = ['timestamp', 'stock',]
-    column_list = ['category_id','brand','name', 'comment', 'unit_price',]
+# class ProductView(ModelView):
+#     page_size=25
+#     column_searchable_list = ['name',]
+#     create_modal = True
+#     edit_modal = True
+#     column_display_pk = True
+#     column_hide_backrefs = False
+#     can_export = True
+#     can_edit = True
+#     form_excluded_columns = ['timestamp', 'stock',]
+#     column_list = ['category_id','brand','name', 'comment', 'unit_price',]
 
-    def is_accessible(self):
-        if 'admin' or 'staff' in session:
-            return True
-        return False
+#     def is_accessible(self):
+#         if 'admin' or 'staff' in session:
+#             return True
+#         return False
 
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('index'))
-
+#     def inaccessible_callback(self, name, **kwargs):
+#         return redirect(url_for('index'))
 
 class BrandView(ModelView):
     page_size = 25
@@ -335,6 +347,7 @@ class CategoryView(BaseView):
                res = Type.query.filter_by(category=category.strip()).all()
                for i in res:
                     types.append(i)
+                    print('TYPES=',i)
         
         all_categories = Category.query.all()
 
@@ -379,7 +392,7 @@ class SettingsView(ModelView):
 class StocksView(ModelView):
     column_display_pk = True
     column_hide_backrefs = False
-    column_list = ['id','product', 'received_quantity' , 'quantity', 'timestamp',]
+    column_list = ['id','category', 'received_quantity' , 'quantity', 'timestamp',]
     column_searchable_list = ['id', 'quantity',]
     column_display_pk = True
     column_hide_backrefs = True
@@ -404,12 +417,13 @@ class ReportsView(AdminIndexView):
         daily_average_sales = db.session.query(func.avg(Invoice.amount)).all()
         new_average_daily = str(daily_average_sales).strip('[](),')
 
-        critical_stocks = Stock.query.all()
+        critical_stocks = db.session.query(Category).all()
+        new_critical_stocks = str(critical_stocks).strip('[](),')
 
-        
         count_invoices = db.session.query(func.count(Invoice.amount)).all()
         new_count_invoices = str(count_invoices).strip('[](),')
-        return self.render('admin/reports.html', new_count_invoices = new_count_invoices,new_result = new_result, new_average_daily = new_average_daily, critical_stocks = critical_stocks)
+        
+        return self.render('admin/reports.html',new_count_invoices = new_count_invoices,new_result = new_result, new_average_daily = new_average_daily, critical_stocks = new_critical_stocks)
 
     def is_accessible(self):
         if 'admin' in session:
@@ -480,15 +494,12 @@ class StaffView(ModelView):
 
 
 admin = Admin(app, name='Admin', template_mode='bootstrap3', index_view = InventoryView())
-# admin.add_view(SalesView(name='Home', endpoint='sales'))
 admin.add_view(CategoryView(name='Category', endpoint='category'))
-admin.add_view(ProductView(Product, db.session))
 admin.add_view(StocksView(Stock,db.session))
 admin.add_view(InvoiceView(Invoice, db.session))
-# admin.add_view(ReportsView(name='Reports', endpoint='reports'))
 admin.add_view(StaffView(Staff, db.session))
 admin.add_view(SettingsView(Settings, db.session))
-# admin.add_view(LogoutView(name='Logout', endpoint='logout'))
+
 
 
 
@@ -713,72 +724,98 @@ def settings():
 #the pos only accepts cash payments
 
 # would develop functions for gcash/ maya or bank transfers.
+
 @app.route('/pos', methods = ['GET', 'POST'])
 @login_required
 def pos():
     admin = session.get('admin', None)
-    user = session.get('staff', None)
-    #WIP
-    all_items = Product.query.all()
-    # print('all items in inventory= ',all_items)
-    #WIP
-    # session['total'] = 0
+    user = session.get('cashier', None)
+    
+    all_items = Category.query.all()
     global arr
     global qty
     global subtotal
     global total
-    # total = session['total']
-    if request.method == 'POST':
-        #only replaced BARCODE WITH NAME OF ITEM
+    
+    if request.method  == 'POST':
         barcode = request.form['barcode']
         quantity = request.form['qty']
         if barcode and quantity and request.method == 'POST':
-            #WIP
-            item = Product.query.filter_by(name=barcode).first()
-            if item:
-                #stock query ===========================================
-                stock = Stock.query.filter_by(id=item.id).first()
-                if stock: #if stock exists
-                    updated_stock = int(stock.quantity) - int(quantity)
-                    stock.quantity = updated_stock
-                    db.session.commit()
-                    #WIP
-                #=======================================================
+            cat_id = barcode.split(' ')[0]
+            brand_name = barcode.split(' ')[1]
+            bcode = barcode.split(' ')[4]
+            types = barcode.split(' ')[7]
+            data = db.get_or_404(Category, cat_id)
+            if data:
+                stock = db.get_or_404(Stock,data.id)
+                print('in stocks',stock.quantity)
+                update_stock = int(stock.quantity) - int(quantity)
+                stock.quantity = update_stock
+                db.session.commit() 
+                #always commit the changes to preserve one way process
+                #integrity of stocks
+                
+                #SUM OF quantities multiplied by unit price
 
-                data = [item.name,int(quantity), item.unit_price, stock.quantity, item.category_id, item.brand]
-                print("output data=")
-                print(data)
+                sum_of_qty = float(quantity) * stock.unit_price
+                #logic for displaying the category into the POS gui
+                item = [data.name, int(quantity), stock.unit_price, stock.quantity,data.brand, data.types]
                 if stock.quantity > 0:
-                    arr.append(data)
-                    
-                    qty = quantity
-                    sum_of_qty = int(qty) * item.unit_price
-                    #WIP 
-                    try:
-                        subtotal.append(sum_of_qty)
-                        total += sum_of_qty
-                        total = sum(subtotal)
-                    except Exception as e:
-                        # total += sum_of_qty
-                        # total = sum(subtotal)
-                        print('error here')
-                    # print('items to be sent to the front END=', arr)
-                elif int(stock.quantity) < int(quantity):
-                    no_stock_data = [item.name, int(quantity) * 0, item.unit_price, stock.quantity]
-                    
-                    stock.quantity = 0
-                    db.session.commit()
-                    flash(f'{item.name} out of stock')
-                    arr.append(no_stock_data)
+                    #updates the global subtotal value based on the calculation on the POS
+                    subtotal += sum_of_qty
+                    arr.append(item)
 
-                    return render_template('pos.html',all_items = all_items ,arr = arr, qty = qty, total = total, user = user, admin = admin)
-                # print(arr)
-                return render_template('pos.html', all_items = all_items,arr = arr, qty = qty, total = total, user = user, admin = admin)
-            
-            flash('not found')
-            return redirect(url_for('pos', all_items = all_items, arr = arr, qty = qty, total = total, user = user, admin = admin))
+
+                    return render_template('pos.html', total=subtotal,arr= arr,all_items = all_items, user=user,admin = admin)        
+            return render_template('pos.html', total=subtotal, arr= arr,all_items = all_items, user=user)
+    return render_template('pos.html',total = subtotal, arr=arr,all_items = all_items, admin = admin, user = user)
+    # total = session['total']
+    # if request.method == 'POST':
+    #     #only replaced BARCODE WITH NAME OF ITEM
+    #     barcode = request.form['barcode']
+    #     quantity = request.form['qty']
+    #     if barcode and quantity and request.method == 'POST':
+    #         #WIP
+    #         item = Product.query.filter_by(name=barcode).first()
+    #         if item:
+    #             #stock query ===========================================
+    #             stock = Stock.query.filter_by(id=item.id).first()
+    #             if stock: #if stock exists
+    #                 updated_stock = int(stock.quantity) - int(quantity)
+    #                 stock.quantity = updated_stock
+    #                 db.session.commit()
+    #                 #WIP
+    #             #=======================================================
+    #             data = [item.name,int(quantity), item.unit_price, stock.quantity, item.category_id, item.brand]
+    #             print("output data=")
+    #             print(data)
+    #             if stock.quantity > 0:
+    #                 arr.append(data)
+    #                 qty = quantity
+    #                 sum_of_qty = int(qty) * item.unit_price
+    #                 #WIP 
+    #                 try:
+    #                     subtotal.append(sum_of_qty)
+    #                     total += sum_of_qty
+    #                     total = sum(subtotal)
+    #                 except Exception as e:
+    #                     # total += sum_of_qty
+    #                     # total = sum(subtotal)
+    #                     print('error here')
+    #                 # print('items to be sent to the front END=', arr)
+    #             elif int(stock.quantity) < int(quantity):
+    #                 no_stock_data = [item.name, int(quantity) * 0, item.unit_price, stock.quantity]
+    #                 stock.quantity = 0
+    #                 db.session.commit()
+    #                 flash(f'{item.name} out of stock')
+    #                 arr.append(no_stock_data)
+    #                 return render_template('pos.html',all_items = all_items ,arr = arr, qty = qty, total = total, user = user, admin = admin)
+    #             # print(arr)
+    #             return render_template('pos.html', all_items = all_items,arr = arr, qty = qty, total = total, user = user, admin = admin)
+    #         flash('not found')
+    #         return redirect(url_for('pos', all_items = all_items, arr = arr, qty = qty, total = total, user = user, admin = admin))
     
-    return render_template('pos.html',arr =arr, all_items = all_items, total = total,user = user, admin = admin)
+    # return render_template('pos.html',arr =arr, all_items = all_items, total = total,user = user, admin = admin)
 
 # @app.route('/test', methods = ['POST'])
 # def test():
@@ -797,35 +834,51 @@ def void():
     global qty
     global subtotal
     global total
-    
-    total = 0
-    new_subtotal = [float(j) for j in subtotal]
-    total = sum(new_subtotal) 
 
-    print('the old total is=',total)
-    
-    if request.method == 'POST':
+    if request.method =='POST':
         dt = request.get_json()
 
         if dt and request.method =='POST':
-            print("data have passed to the post api!!!")
-            new_data = int(dt['data'])
+            data = int(dt['data'])
 
-            try:
-                sub = (arr[new_data][3])
-                total = total - float(sub)
-                print(total)
-                subtotal = total
-                print("the updated total=",subtotal)
-            except Exception as e:
-                print(e)
-            
-            arr.pop(new_data)
-            
-            print("the total is=", total)
-            return redirect(url_for('pos', arr = arr, total = total, subtotal = subtotal, qty = qty, admin = admin))
-        return redirect(url_for('pos', arr = arr,subtotal = subtotal, total = total, qty = qty, admin = admin))
-    return redirect(url_for('pos', arr = arr,subtotal = subtotal, total = total, qty = qty, admin = admin))
+            unit_p = (arr[data][2])
+            unit_quantity = (arr[data][1])
+
+            adjusted_subtotal = float(unit_p) * float(unit_quantity)
+            print('adjusted=',adjusted_subtotal)
+            arr.pop(data)
+
+            subtotal -= adjusted_subtotal
+        return redirect(url_for('pos'))
+    return redirect(url_for('pos'))
+
+
+    # total = 0
+    # new_subtotal = [float(j) for j in subtotal]
+    # total = sum(new_subtotal) 
+
+    # print('the old total is=',total)
+    
+    # if request.method == 'POST':
+    #     dt = request.get_json()
+
+    #     if dt and request.method =='POST':
+    #         print("data have passed to the post api!!!")
+    #         new_data = int(dt['data'])
+
+    #         try:
+    #             sub = (arr[new_data][3])
+    #             total = total - float(sub)
+    #             print(total)
+    #             subtotal = total
+    #             print("the updated total=",subtotal)
+    #         except Exception as e:
+    #             print(e)
+    #         arr.pop(new_data)
+    #         print("the total is=", total)
+    #         return redirect(url_for('pos', arr = arr, total = total, subtotal = subtotal, qty = qty, admin = admin))
+    #     return redirect(url_for('pos', arr = arr,subtotal = subtotal, total = total, qty = qty, admin = admin))
+    # return redirect(url_for('pos', arr = arr,subtotal = subtotal, total = total, qty = qty, admin = admin))
 
 
 # @app.route('/voiditem', methods = ['POST'])
@@ -833,13 +886,63 @@ def void():
 #     global arr
 #     global qty
 #     global subtotal
+    
+#     if request.method == 'POST'
+#     # dt = request.json['data']
+    # if dt and request.method =='POST':
+    #     print("DATA INSIDE THE POST API")
+    #     return redirect(url_for('pos', arr = arr, subtotal = subtotal, qty = qty, admin = admin))
+    # # return redirect(url_for('pos', arr = arr, subtotal = subtotal, qty = qty, admin = admin))
+    # return redirect(url_for('pos', arr = arr, subtotal = subtotal, qty = qty, admin = admin))
 
-#     dt = request.json['data']
-#     if dt and request.method =='POST':
-#         print("DATA INSIDE THE POST API")
-#         return redirect(url_for('pos', arr = arr, subtotal = subtotal, qty = qty, admin = admin))
-#     # return redirect(url_for('pos', arr = arr, subtotal = subtotal, qty = qty, admin = admin))
-#     return redirect(url_for('pos', arr = arr, subtotal = subtotal, qty = qty, admin = admin))
+@app.route('/variance', methods =['POST', 'GET'])
+def variance():
+    admin = session.get('admin', None)
+    user = session.get('staff', None)
+    if 'admin' in session:
+        with open('lookups/category.csv') as lookup:
+            reader = csv.reader(lookup)
+            data = [i.strip() for i in lookup]
+
+        if request.method == 'POST':
+            category = request.form['category']
+            types = request.form['type']
+
+            if category and types and request.method =='POST':
+                if category and types != '':
+                    new_type = Type(types.strip(),category.strip())
+                    db.session.add(new_type)
+                    db.session.commit()
+
+                    flash(f'new type added for {category}')
+                    return render_template('variance.html', data = data, admin = admin, user = user)
+                flash('fields cannot be empty!')
+                return render_template('variance.html', data = data, admin = admin, user = user)
+        return render_template('variance.html', data = data, admin = admin, user = user)
+    return redirect(url_for('index'))
+
+
+
+@app.route('/brand', methods = ['POST'])
+def brand():
+    if 'admin' in session:
+        if request.method == 'POST':
+            brand = request.form['brand']
+
+            if brand and request.method =='POST':
+                if brand != '':
+                    new_brand = BrandName(brand.strip())
+                    db.session.add(new_brand)
+                    db.session.commit()
+                    flash('new brand name added')
+                    return redirect(url_for('variance'))
+                flash('field cannot be empty!')
+                return redirect(url_for('variance'))
+            return redirect(url_for('variance'))
+    return redirect(url_for('index'))
+
+
+
 
 
 
@@ -851,9 +954,9 @@ def cancel():
     filename = 'invoice.csv'
     if request.method == 'POST':
         arr = []
-        qty = []
+        qty = 0
         session['total'] = 0
-        subtotal = [0]
+        subtotal = 0 #changed from list to integer/float
 
         f = open(filename, 'w+')
         f.close()
@@ -886,7 +989,8 @@ def checkout():
             f.write('==================================' + '\n')
             # f.write('item'.jlust(0) + 'qty'.center(5) + 'unit p.'.rjust(10))
             for line in arr:
-                f.write("{} {} {} {}".format(line[0].ljust(0), str(line[2]).center(5), str(line[3]).rjust(10), '\n'))
+                category = f'{line[4]} {line[0]}{line[5]}'
+                f.write("{} {} {} {}".format(category.ljust(0), str(line[2]).center(5), str(line[2]).rjust(10), '\n'))
             f.write('==================================' + '\n')
             f.write('        OFFICIAL RECEIPT          ' + '\n\n')
             f.write('date: ' + str(datetime.now().strftime('%m/%d/%Y- %H:%M')) +'\n')
@@ -896,7 +1000,7 @@ def checkout():
             f.close()
             # clears all the variables
             arr = []
-            subtotal = []
+            subtotal = 0
             session['total'] = 0
             total = 0
 

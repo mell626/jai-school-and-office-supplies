@@ -1,11 +1,10 @@
   J AI Office and School Supplies
 ==================================
-panda red ballpen  7.0          97 
-panda red ballpen  7.0          96 
+ Cattleya   paper  A4  320.0      320.0 
 ==================================
         OFFICIAL RECEIPT          
 
-date: 01/03/2024- 08:36
-Total Amount:                    28.0 
-Amount Tendered:                   30
-Change:                         2.0
+date: 01/14/2024- 20:26
+Total Amount:                   320.0 
+Amount Tendered:                  320
+Change:                         0.0

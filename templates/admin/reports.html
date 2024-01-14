@@ -89,15 +89,15 @@
             <th>ID</th>
             <th>Product</th>
             <th>Quantity</th>
-            <th>Status</th>
+            <th>% in Stock</th>
           </tr>
           <tbody>
             {% for i in critical_stocks %}
               <tr>
                 <td> {{ i.id }} </td>
-                <td> {{ i.name }} </td>
+                <td> {{ i.category }} </td>
                 <td> {{ i.quantity }} </td>
-                <td> {{ i.status }} </td>
+                <td>{{ '%0.2f' | format(i.quantity / i.received_quantity * 100|float) }}</td>
               </tr>
             {% endfor %}
           </tbody>

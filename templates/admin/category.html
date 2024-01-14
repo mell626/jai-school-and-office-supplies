@@ -5,9 +5,9 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script> 
 
 <br><br>
-
+<a href=" {{ url_for('variance') }} " style="position: absolute; left: 85%;">Add New Variance</a>
 <fieldset>    
-    <legend>Category</legend>   
+    <legend></legend>   
     <div class="container">
         <div class="row">
             <div class="col-xs-2">
@@ -32,22 +32,22 @@
                             {% endfor %}
                         {% endif %}
                     </select>
-            </div>
-            <div class="col-xs-2">
-                <label for="brand">Select Brand:</label>
-                        <select class="form-control input-sm" name="brand" id="brand">
-                            {% for i in brand %}
-                            <option value=" {{ i }} ">{{ i }}</option>
-                            {% endfor %}
-                        </select>  
+                        </div>
+                        <div class="col-xs-2">
+                            <label for="brand">Select Brand:</label>
+                            <select class="form-control input-sm" name="brand" id="brand">
+                                {% for i in brand %}
+                                <option value=" {{ i }} ">{{ i }}</option>
+                                {% endfor %}
+                            </select>  
             </div>
             <div class="col-xs-2">
                 <label for="quantity">Quantity:</label>
                 <br>
                 <select class="form-control input-sm" name="quantity" id="quantity">
-                    <option value="ream">ream</option>
-                    <option value="box">box</option>
                     <option value="pcs">pcs</option>
+                    <option value="pack">pack</option>
+                    <option value="box">box</option>
                 </select>
             </div>
             <div class="col-xs-4">
@@ -58,20 +58,20 @@
                 
             
             </div>
-            <input type="submit" value="ADD" class="btn btn-info">
+            <input type="submit" value="ADD" class="btn btn-success pull-right">
         </form>
         </div>
     </div>
 </fieldset>
 <br><br>
-<table class="table table-stripped">
+<table class="table table-striped">
     <thead>
         <tr style="background-color: gray;">
             <th>id</th>
             <th>category</th>
             <th>type</th>
             <th>brand</th>
-            <th>quantity</th>
+            
             <th>comment</th>
         </tr>
     </thead>
@@ -82,7 +82,6 @@
                 <td>{{ i.name }}</td>
                 <td> {{ i.types }} </td>
                 <td> {{ i.brand }} </td>
-                <td> {{ i.quantity }} </td>
                 <td> {{ i.comment }} </td>
             </tr>
         {% endfor %}
@@ -103,6 +102,25 @@
         $("#pickup").text(data);
         $("#category1").val(data);
     })
+
+
+    $(document).ready(function(){
+        let selections = $("#quantity");
+        
+        let d = localStorage.getItem('storedPickup');
+        console.log('stored in localstorage='+d);
+        // check if category is paper 
+       if(d.indexOf("paper") >=0) {
+        $.each(selections, function(key, value) {   
+            $('#quantity')
+                .append($("<option></option>")
+                    .attr("ream", key)
+                    .text("ream")); 
+                });
+       }
+        
+    });
+
     // $(document).ready(function(){
     //     let loadedPickup = JSON.parse(localStorage.getItem('storedPickup'));
     //     $('#categpry #pickup').val(loadedPickup);
